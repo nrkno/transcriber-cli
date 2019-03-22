@@ -1,0 +1,11 @@
+{
+  "extends": "@oclif/tslint",
+  "rules": {
+    "quotemark": [
+      true,
+      "double",
+      "avoid-escape",
+      "avoid-template"
+    ]
+  }
+}
