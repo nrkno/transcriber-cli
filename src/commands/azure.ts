@@ -40,10 +40,11 @@ export default class Azure extends Command {
         this.log("Try to fetch valiated token")
         // setTimeout( this.fetchIdToken(flags, devicecode), 4000 );
         // await this.fetchIdToken(flags, devicecode)
-        this.log("Now wait 10 sec")
+        this.log("Now wait 60 sec")
         setTimeout(() => {
-          this.log("Test")
-        }, 10000)
+          this.log("Try to fetch the Azure Ad Id token.")
+          this.fetchIdToken(flags, devicecode)
+        }, 60000)
       }
     } else {
       this.log("Missing required parameters -c azure_ad_client_id and -o azure_ad_organization_name")
