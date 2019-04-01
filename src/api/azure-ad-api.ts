@@ -6,7 +6,9 @@ function api <T>(url: string, params: URLSearchParams): Promise<T> {
       if (!response.ok) {
         throw new Error(response.statusText)
       }
-      return response.json<T>()
+      const responseJson = response.json<T>()
+      console.log("Response from ", url, ", is: ", responseJson)
+      return responseJson
     })
 }
 

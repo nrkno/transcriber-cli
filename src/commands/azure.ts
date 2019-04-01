@@ -7,8 +7,7 @@ export default class Azure extends Command {
   static description = "Login using Azure Ad"
 
   static examples = [
-    `$ transcribe azure -c client_id -o tennants_organization_name
-`,
+    `$ transcribe azure -c client_id -o tennant_organization_name`,
   ]
   static flags = {
     help: flags.help({char: "h"}),
@@ -24,13 +23,13 @@ export default class Azure extends Command {
       const adUri = "https://login.microsoftonline.com/" + flags.orgname + ".onmicrosoft.com/oauth2/devicecode" //flags.adUri
 
       const params = new URLSearchParams()
-      params.append("client_id", "ddddd")
+      params.append("client_id", flags.clientId)
       params.append("scope", "user.read openid profile")
-      const devicecode = await api<{ userCode: string; deviceCode: string }>(adUri, params)
-        .then(({userCode, deviceCode}) => {
-          this.log("Pleas add this code to the Chrome window popping up: ", userCode)
+      const devicecode = await api<{ user_code: string; device_code: string }>(adUri, params)
+        .then(({user_code, device_code}) => {
+          this.log("Pleas add this code to the Chrome window popping up: ", user_code)
           // this.log(user_code, device_code)
-          return deviceCode
+          return device_code
         })
         .catch(error => {
           this.log(error)
