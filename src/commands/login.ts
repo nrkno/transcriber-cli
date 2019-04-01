@@ -22,12 +22,12 @@ login -u user_name -p password
   static args = [{name: "file"}]
 
   firebaseConfig = {
-    apiKey: "TODO",
-    authDomain: "<project-id>.firebaseapp.com",
-    databaseURL: "https://<project-id>.firebaseio.com",
-    projectId: "<firebase-project-id>",
-    storageBucket: "<project-id>.appspot.com",
-    messagingSenderId: "TODO"
+    apiKey: "AIzaSyAfgqGn6U26LFvnhBmG62NQHCK2JT-Tk2o",
+    authDomain: "transcribe-baardl.firebaseapp.com",
+    databaseURL: "https://transcribe-baardl.firebaseio.com",
+    projectId: "transcribe-baardl",
+    storageBucket: "transcribe-baardl.appspot.com",
+    messagingSenderId: "527347105742"
   }
 
   async run() {
