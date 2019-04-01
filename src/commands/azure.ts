@@ -3,22 +3,22 @@ import open from "open"
 
 import api from "../api/azure-ad-api"
 
-export default class Open extends Command {
-  static description = "Open an webpage"
+export default class Azure extends Command {
+  static description = "Login using Azure Ad"
 
   static examples = [
-    `$ transcribe open -c azure_ad_client_id
+    `$ transcribe azure -c client_id -o tennants_organization_name
 `,
   ]
   static flags = {
     help: flags.help({char: "h"}),
     // flag with a value (-n, --name=VALUE)
     clientId: flags.string({char: "c", description: "Azure Ad clientId"}),
-    orgname: flags.string({char: "o", description: "Azure Ad tennand organization name"})
+    orgname: flags.string({char: "o", description: "Azure Ad tennant organization name"})
   }
 
   async run() {
-    const {flags} = this.parse(Open)
+    const {flags} = this.parse(Azure)
 
     if (flags.clientId && flags.orgname) {
       const adUri = "https://login.microsoftonline.com/" + flags.orgname + ".onmicrosoft.com/oauth2/devicecode" //flags.adUri
@@ -26,11 +26,11 @@ export default class Open extends Command {
       const params = new URLSearchParams()
       params.append("client_id", "ddddd")
       params.append("scope", "user.read openid profile")
-      const devicecode = await api<{ title: string; message: string }>(adUri, params)
-        .then(({user_code, device_code}) => {
-          this.log("Pleas add this code to the Chrome window popping up: ", user_code)
+      const devicecode = await api<{ userCode: string; deviceCode: string }>(adUri, params)
+        .then(({userCode, deviceCode}) => {
+          this.log("Pleas add this code to the Chrome window popping up: ", userCode)
           // this.log(user_code, device_code)
-          return device_code
+          return deviceCode
         })
         .catch(error => {
           this.log(error)
