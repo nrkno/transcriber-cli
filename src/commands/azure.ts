@@ -3,6 +3,7 @@ import open from "open"
 
 import api, {IAzureAdTokens} from "../api/azure-ad-api"
 import firebaseApi from "../api/firebase-api"
+import {saveTokenToLocalConfig} from "../config/config"
 
 export default class Azure extends Command {
   static description = "Login using Azure Ad"
@@ -50,6 +51,7 @@ export default class Azure extends Command {
               firebaseTokens
                 .then(fbValues => {
                   this.log("Custom token from firebase: ", fbValues)
+                  saveTokenToLocalConfig("firebaseCustomToken", fbValues.firebaseCustomToken)
                 })
                 .catch(error => {
                   this.log("Failed to fetch customToken from Firebase. Reason: ", error)
@@ -144,5 +146,4 @@ export default class Azure extends Command {
       throw new Error("Missing parameters. firebaseProjectName: " + flags.firebaseProjectName + ". azureIdToken: " + tokens.idToken)
     }
   }
-
 }
