@@ -1,5 +1,6 @@
 import {Command, flags} from "@oclif/command"
 import open from "open"
+import {__await} from "tslib"
 
 import api from "../api/azure-ad-api"
 
@@ -15,7 +16,6 @@ export default class Azure extends Command {
     clientId: flags.string({char: "c", description: "Azure Ad clientId"}),
     orgname: flags.string({char: "o", description: "Azure Ad tennant organization name"})
   }
-  extracted
 
   async run() {
     const {flags} = this.parse(Azure)
@@ -28,7 +28,7 @@ export default class Azure extends Command {
       params.append("scope", "user.read openid profile")
       const devicecode = await api<{ user_code: string; device_code: string }>(adUri, params)
         .then(({user_code, device_code}) => {
-          this.log("Pleas add this code to the Chrome window popping up: ", user_code)
+          this.log("Please add this code to the Chrome window popping up: ", user_code)
           // this.log(user_code, device_code)
           return device_code
         })
@@ -37,13 +37,13 @@ export default class Azure extends Command {
         })
       if (devicecode) {
         await open("https://microsoft.com/devicelogin")
-        this.log("Try to fetch valiated token")
-        // setTimeout( this.fetchIdToken(flags, devicecode), 4000 );
-        // await this.fetchIdToken(flags, devicecode)
-        this.log("Now wait 60 sec")
+        this.log("Waiting 60 seconds for You to enter the code, and accept connection request.")
         setTimeout(() => {
           this.log("Try to fetch the Azure Ad Id token.")
-          this.fetchIdToken(flags, devicecode)
+          const tokens = this.fetchIdToken(flags, devicecode)
+          tokens.then(values => {
+            this.log("Tokens: ", values)
+          })
         }, 60000)
       }
     } else {
@@ -56,14 +56,21 @@ export default class Azure extends Command {
     validateTokenParams.append("client_id", flags.clientId)
     validateTokenParams.append("device_code", devicecode)
     const tokenUri = "https://login.microsoftonline.com/" + flags.orgname + ".onmicrosoft.com/oauth2/v2.0/token"
-    const azureIdToken = await api<{ id_token: string; access_token: string; refresh_token: string }>(tokenUri, validateTokenParams)
+    const tokens = await api<{ id_token: string; access_token: string; refresh_token: string }>(tokenUri, validateTokenParams)
       .then(({id_token, access_token, refresh_token}) => {
-        this.log("IdToken: ", id_token, " at: ", access_token, " rt: ", refresh_token)
-        return id_token
+        // this.log("IdToken: ", id_token, " at: ", access_token, " rt: ", refresh_token)
+        const tokens = {
+          azureIdToken: id_token,
+          azureAccessToken: access_token,
+          azureRefreshToken: refresh_token
+        }
+        return tokens
       })
       .catch(error => {
         this.log(error)
+        return {}
       })
-    this.log("Received azureIdTooken: ", azureIdToken)
+    this.log("Received azureIdTooken: ", tokens.azureIdToken)
+    return tokens
   }
 }
