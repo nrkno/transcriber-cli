@@ -4,6 +4,7 @@ import open from "open"
 import api, {IAzureAdTokens} from "../api/azure-ad-api"
 import firebaseApi from "../api/firebase-api"
 import {saveTokenToLocalConfig} from "../config/config"
+import {Constants} from "../config/constants"
 
 export default class Azure extends Command {
   static description = "Login using Azure Ad"
@@ -16,7 +17,7 @@ export default class Azure extends Command {
     // flag with a value (-n, --name=VALUE)
     clientId: flags.string({char: "c", description: "Azure Ad clientId"}),
     orgname: flags.string({char: "o", description: "Azure Ad tennant organization name"}),
-    firebaseProjectName: flags.string( {char: "p", description: "Firebase project name"})
+    firebaseProjectName: flags.string({char: "p", description: "Firebase project name"})
   }
 
   async run() {
@@ -51,7 +52,7 @@ export default class Azure extends Command {
               firebaseTokens
                 .then(fbValues => {
                   this.log("Custom token from firebase: ", fbValues)
-                  saveTokenToLocalConfig("firebaseCustomToken", fbValues.firebaseCustomToken)
+                  saveTokenToLocalConfig(Constants.FIREBASE_CUSTOM_TOKEN, fbValues.firebaseCustomToken)
                 })
                 .catch(error => {
                   this.log("Failed to fetch customToken from Firebase. Reason: ", error)
@@ -120,13 +121,13 @@ export default class Azure extends Command {
  */
 
   private async validateAzureAdTokens(flags: any, tokens: IAzureAdTokens) {
-    if (flags.firebaseProjectName && tokens.idToken) {
+    if (flags.projectname && tokens.idToken) {
       const validateAdTokenParams = new URLSearchParams()
       const headers = {
         "Content-Type": "application/json",
         Authorization: "Bearer " + tokens.accessToken
       }
-      const tokenUri = "https://europe-west1-" + flags.firebaseProjectName + ".cloudfunctions.net/jwttoken"
+      const tokenUri = "https://europe-west1-" + flags.projectname + ".cloudfunctions.net/jwttoken"
       const firebaseTokens = await firebaseApi<{ token: string }>(tokenUri, validateAdTokenParams, headers)
         .then(({token}) => {
           // this.log("IdToken: ", id_token, " at: ", access_token, " rt: ", refresh_token)
@@ -143,7 +144,7 @@ export default class Azure extends Command {
       return firebaseTokens
 
     } else {
-      throw new Error("Missing parameters. firebaseProjectName: " + flags.firebaseProjectName + ". azureIdToken: " + tokens.idToken)
+      throw new Error("Missing parameters. firebaseProjectName: " + flags.projectname + ". azureIdToken: " + tokens.idToken)
     }
   }
 }

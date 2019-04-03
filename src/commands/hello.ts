@@ -26,7 +26,7 @@ hello world from ./src/hello.ts!
     const {args, flags} = this.parse(Hello)
 
     const name = flags.name || "world"
-    const paramName = flags.config || "foo"
+    const paramName = flags.projectname || "foo"
     const value = getParameter(paramName)
     this.log(`hello ${name} from ./src/commands/hello.ts`)
     this.log(`paramer ${paramName} has value ${value}`)
