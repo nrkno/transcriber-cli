@@ -3,7 +3,7 @@ import {Command, flags} from "@oclif/command"
 import firebase from "firebase/app"
 import "firebase/auth"
 
-export default class Login extends Command {
+export default class Simplelogin extends Command {
   static description = "describe the command here"
 
   static examples = [
@@ -31,7 +31,7 @@ login -u user_name -p password
   }
 
   async run() {
-    const {flags} = this.parse(Login)
+    const {flags} = this.parse(Simplelogin)
 
     const username = flags.username
     const password = flags.password
