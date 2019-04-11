@@ -74,7 +74,8 @@ export default class Azure extends Command {
     validateTokenParams.append("client_id", flags.clientId)
     validateTokenParams.append("device_code", devicecode)
     const tokenUri = "https://login.microsoftonline.com/" + flags.orgname + ".onmicrosoft.com/oauth2/v2.0/token"
-    const tokens = await api<{ id_token: string; access_token: string; refresh_token: string }>(tokenUri, validateTokenParams)
+    // @ts-ignore
+    const tokens: IAzureAdTokens = await api<{ id_token: string; access_token: string; refresh_token: string }>(tokenUri, validateTokenParams)
       .then(({id_token, access_token, refresh_token}) => {
         // this.log("IdToken: ", id_token, " at: ", access_token, " rt: ", refresh_token)
         const asureIdTokens: IAzureAdTokens = {

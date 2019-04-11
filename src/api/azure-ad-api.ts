@@ -11,6 +11,7 @@ function api <T>(url: string, params: URLSearchParams): Promise<T> {
       if (!response.ok) {
         throw new Error(response.statusText)
       }
+      // @ts-ignore
       const responseJson = response.json<T>()
       //console.log("Response from ", url, ", is: ", responseJson)
       return responseJson
