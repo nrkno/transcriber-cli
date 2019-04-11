@@ -1,8 +1,8 @@
 import {Command, flags} from "@oclif/command"
 
+import firebaseApi from "../api/firebase-api"
 import {getParameter, setParameter} from "../config/config"
 import {Constants} from "../config/constants"
-import firebaseApi from "../api/firebase-api"
 
 export default class Upload extends Command {
   static description = "describe the command here"

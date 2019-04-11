@@ -14,6 +14,7 @@
     "@types/configstore": "^4.0.0",
     "@types/node-fetch": "^2.1.7",
     "@types/open": "^6.0.0",
+    "cli-ux": "^5.2.1",
     "configstore": "^4.0.0",
     "firebase": "^5.9.0",
     "node-fetch": "^2.3.0",

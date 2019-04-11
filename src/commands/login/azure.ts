@@ -1,9 +1,10 @@
 import {Command, flags} from "@oclif/command"
+import cli from "cli-ux"
 import open from "open"
 
 import api, {IAzureAdTokens} from "../../api/azure-ad-api"
 import firebaseApi from "../../api/firebase-api"
-import {saveTokenToLocalConfig} from "../../config/config"
+import {getParameter, saveTokenToLocalConfig, setParameter} from "../../config/config"
 import {Constants} from "../../config/constants"
 
 export default class Azure extends Command {
@@ -23,7 +24,15 @@ export default class Azure extends Command {
   async run() {
     const {flags} = this.parse(Azure)
 
-    if (flags.clientId && flags.orgname && flags.firebaseProjectName) {
+    let projectName: string
+    if (flags.firebaseProjectName) {
+      projectName = flags.firebaseProjectName
+      setParameter(Constants.FIREBASE_PROJECT_NAME, projectName)
+    } else {
+      projectName = getParameter(Constants.FIREBASE_PROJECT_NAME)
+    }
+
+    if (flags.clientId && flags.orgname && projectName) {
       const adUri = "https://login.microsoftonline.com/" + flags.orgname + ".onmicrosoft.com/oauth2/devicecode" //flags.adUri
 
       const params = new URLSearchParams()
@@ -38,34 +47,34 @@ export default class Azure extends Command {
         .catch(error => {
           this.log(error)
         })
+      await cli.anykey("Press any key to open the Chrome window.")
       if (devicecode) {
         await open("https://microsoft.com/devicelogin")
-        this.log("Waiting 30 seconds for You to enter the code, and accept connection request.")
-        //TODO repeat request every x seconds until user has accepted.
-        setTimeout(() => {
-          this.log("Try to fetch the Azure Ad Id token.")
-          const tokens = this.fetchIdToken(flags, devicecode)
-          tokens
-            .then(values => {
-              this.log("Tokens: ", values)
-              const firebaseTokens = this.validateAzureAdTokens(flags, values)
-              firebaseTokens
-                .then(fbValues => {
-                  this.log("Custom token from firebase: ", fbValues)
-                  saveTokenToLocalConfig(Constants.FIREBASE_CUSTOM_TOKEN, fbValues.firebaseCustomToken)
-                })
-                .catch(error => {
-                  this.log("Failed to fetch customToken from Firebase. Reason: ", error)
-                  throw error
-                })
-            })
-            .catch(error => {
-              this.log("Failed to fetch userToken from AzureAd. Reason: ", error)
-            })
-        }, 30000)
+        await cli.anykey("Press any key when you are authenticated in the Chrome window.")
+        this.log("Try to fetch the Azure Ad Id token.")
+        const tokens = this.fetchIdToken(flags, devicecode)
+        tokens
+          .then(values => {
+            this.log("Tokens: ", values)
+            const firebaseTokens = this.validateAzureAdTokens(projectName, values)
+            firebaseTokens
+              .then(fbValues => {
+                this.log("Custom token from firebase: ", fbValues)
+                saveTokenToLocalConfig(Constants.FIREBASE_CUSTOM_TOKEN, fbValues.firebaseCustomToken)
+              })
+              .catch(error => {
+                this.log("Failed to fetch customToken from Firebase. Reason: ", error)
+                throw error
+              })
+          })
+          .catch(error => {
+            this.log("Failed to fetch userToken from AzureAd. Reason: ", error)
+          })
+      } else {
+        this.log("Error: Missing devicecode parameter.")
       }
     } else {
-      this.log("Missing required parameters -c azure_ad_client_id and -o azure_ad_organization_name")
+      this.log("Missing required parameters -c azure_ad_client_id -o azure_ad_organization_name -p firebase_project_name")
     }
   }
   private async fetchIdToken(flags: any, devicecode: any): Promise<IAzureAdTokens> {
@@ -121,14 +130,14 @@ export default class Azure extends Command {
 }
  */
 
-  private async validateAzureAdTokens(flags: any, tokens: IAzureAdTokens) {
-    if (flags.firebaseProjectName && tokens.idToken) {
+  private async validateAzureAdTokens(firebaseProjectName: string, tokens: IAzureAdTokens) {
+    if (firebaseProjectName && tokens.idToken) {
       const validateAdTokenParams = new URLSearchParams()
       const headers = {
         "Content-Type": "application/json",
         Authorization: "Bearer " + tokens.accessToken
       }
-      const tokenUri = "https://europe-west1-" + flags.firebaseProjectName + ".cloudfunctions.net/jwttoken"
+      const tokenUri = "https://europe-west1-" + firebaseProjectName + ".cloudfunctions.net/jwttoken"
       const firebaseTokens = await firebaseApi<{ token: string }>(tokenUri, validateAdTokenParams, headers)
         .then(({token}) => {
           // this.log("IdToken: ", id_token, " at: ", access_token, " rt: ", refresh_token)
@@ -145,7 +154,7 @@ export default class Azure extends Command {
       return firebaseTokens
 
     } else {
-      throw new Error("Missing parameters. firebaseProjectName: " + flags.firebaseProjectName + ". azureIdToken: " + tokens.idToken)
+      throw new Error("Missing parameters. firebaseProjectName: " + firebaseProjectName + ". azureIdToken: " + tokens.idToken)
     }
   }
 }

@@ -6,6 +6,7 @@
       "double",
       "avoid-escape",
       "avoid-template"
-    ]
+    ],
+    "no-console": [false, "log", "error"]
   }
 }
