@@ -121,13 +121,13 @@ export default class Azure extends Command {
  */
 
   private async validateAzureAdTokens(flags: any, tokens: IAzureAdTokens) {
-    if (flags.projectname && tokens.idToken) {
+    if (flags.firebaseProjectName && tokens.idToken) {
       const validateAdTokenParams = new URLSearchParams()
       const headers = {
         "Content-Type": "application/json",
         Authorization: "Bearer " + tokens.accessToken
       }
-      const tokenUri = "https://europe-west1-" + flags.projectname + ".cloudfunctions.net/jwttoken"
+      const tokenUri = "https://europe-west1-" + flags.firebaseProjectName + ".cloudfunctions.net/jwttoken"
       const firebaseTokens = await firebaseApi<{ token: string }>(tokenUri, validateAdTokenParams, headers)
         .then(({token}) => {
           // this.log("IdToken: ", id_token, " at: ", access_token, " rt: ", refresh_token)
@@ -144,7 +144,7 @@ export default class Azure extends Command {
       return firebaseTokens
 
     } else {
-      throw new Error("Missing parameters. firebaseProjectName: " + flags.projectname + ". azureIdToken: " + tokens.idToken)
+      throw new Error("Missing parameters. firebaseProjectName: " + flags.firebaseProjectName + ". azureIdToken: " + tokens.idToken)
     }
   }
 }

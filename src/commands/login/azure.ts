@@ -23,7 +23,7 @@ export default class Azure extends Command {
   async run() {
     const {flags} = this.parse(Azure)
 
-    if (flags.clientId && flags.orgname) {
+    if (flags.clientId && flags.orgname && flags.firebaseProjectName) {
       const adUri = "https://login.microsoftonline.com/" + flags.orgname + ".onmicrosoft.com/oauth2/devicecode" //flags.adUri
 
       const params = new URLSearchParams()
@@ -40,7 +40,7 @@ export default class Azure extends Command {
         })
       if (devicecode) {
         await open("https://microsoft.com/devicelogin")
-        this.log("Waiting 60 seconds for You to enter the code, and accept connection request.")
+        this.log("Waiting 30 seconds for You to enter the code, and accept connection request.")
         //TODO repeat request every x seconds until user has accepted.
         setTimeout(() => {
           this.log("Try to fetch the Azure Ad Id token.")
@@ -62,7 +62,7 @@ export default class Azure extends Command {
             .catch(error => {
               this.log("Failed to fetch userToken from AzureAd. Reason: ", error)
             })
-        }, 60000)
+        }, 30000)
       }
     } else {
       this.log("Missing required parameters -c azure_ad_client_id and -o azure_ad_organization_name")
@@ -121,13 +121,13 @@ export default class Azure extends Command {
  */
 
   private async validateAzureAdTokens(flags: any, tokens: IAzureAdTokens) {
-    if (flags.projectname && tokens.idToken) {
+    if (flags.firebaseProjectName && tokens.idToken) {
       const validateAdTokenParams = new URLSearchParams()
       const headers = {
         "Content-Type": "application/json",
         Authorization: "Bearer " + tokens.accessToken
       }
-      const tokenUri = "https://europe-west1-" + flags.projectname + ".cloudfunctions.net/jwttoken"
+      const tokenUri = "https://europe-west1-" + flags.firebaseProjectName + ".cloudfunctions.net/jwttoken"
       const firebaseTokens = await firebaseApi<{ token: string }>(tokenUri, validateAdTokenParams, headers)
         .then(({token}) => {
           // this.log("IdToken: ", id_token, " at: ", access_token, " rt: ", refresh_token)
@@ -144,7 +144,7 @@ export default class Azure extends Command {
       return firebaseTokens
 
     } else {
-      throw new Error("Missing parameters. firebaseProjectName: " + flags.projectname + ". azureIdToken: " + tokens.idToken)
+      throw new Error("Missing parameters. firebaseProjectName: " + flags.firebaseProjectName + ". azureIdToken: " + tokens.idToken)
     }
   }
 }
